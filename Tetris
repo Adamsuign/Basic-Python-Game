@@ -1,0 +1,101 @@
+import pygame
+import random
+
+# Initialisation de Pygame
+pygame.init()
+
+# Couleurs
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GRAY = (128, 128, 128)
+COLORS = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255), (255, 165, 0)]
+
+# Taille de l'écran
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 500
+BLOCK_SIZE = 20
+
+# Initialisation de l'écran
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Tetris")
+
+# Classes
+class Block:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, BLOCK_SIZE, BLOCK_SIZE))
+
+    def move(self, dx, dy):
+        self.x += dx
+        self.y += dy
+
+class Shape:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.color = random.choice(COLORS)
+        self.blocks = []
+
+    def draw(self):
+        for block in self.blocks:
+            block.draw()
+
+    def move(self, dx, dy):
+        for block in self.blocks:
+            block.move(dx, dy)
+
+    def rotate(self):
+        pass  # À implémenter
+
+def create_shape():
+    return Shape(SCREEN_WIDTH // 2, 0)
+
+def draw_grid():
+    for x in range(0, SCREEN_WIDTH, BLOCK_SIZE):
+        pygame.draw.line(screen, GRAY, (x, 0), (x, SCREEN_HEIGHT))
+    for y in range(0, SCREEN_HEIGHT, BLOCK_SIZE):
+        pygame.draw.line(screen, GRAY, (0, y), (SCREEN_WIDTH, y))
+
+# Initialisation du jeu
+current_shape = create_shape()
+clock = pygame.time.Clock()
+fall_time = 0
+fall_speed = 0.5
+
+# Boucle principale
+running = True
+while running:
+    screen.fill(BLACK)
+
+    # Gestion des événements
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Mouvement de la forme
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        current_shape.move(-BLOCK_SIZE, 0)
+    if keys[pygame.K_RIGHT]:
+        current_shape.move(BLOCK_SIZE, 0)
+    if keys[pygame.K_DOWN]:
+        current_shape.move(0, BLOCK_SIZE)
+
+    # Gestion de la chute de la forme
+    fall_time += clock.get_rawtime()
+    if fall_time // 1000 >= fall_speed:
+        current_shape.move(0, BLOCK_SIZE)
+        fall_time = 0
+
+    # Dessin de la grille et de la forme
+    draw_grid()
+    current_shape.draw()
+
+    pygame.display.flip()
+    clock.tick(30)
+
+pygame.quit()
